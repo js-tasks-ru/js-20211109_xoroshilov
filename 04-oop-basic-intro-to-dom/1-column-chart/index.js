@@ -29,25 +29,20 @@ export default class ColumnChart {
       formatHeading: this.formatHeading
     }));
 
-    this.update();
+    if (this.data.length === 0) this.element.classList.add("column-chart_loading");
   }
 
   initEventListeners = () => {}
 
   update = () => {
-    this.element.classList.add("column-chart_loading");
-
-    // Async func setTimeout as a temporary idea to display data loading and class updates
-    setTimeout(() => {
-      this.element.classList.remove("column-chart_loading");
-    }, 1000);
+    this.render();
   }
 
   remove = () => {
     this.element.remove();
   }
 
-  destroy() {
+  destroy = () => {
     this.remove();
   }
 
