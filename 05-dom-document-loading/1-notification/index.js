@@ -11,6 +11,7 @@ export default class NotificationMessage {
     this.element = NotificationMessage.element;
 
     if (this.element) this.destroy();
+    this.element = this.createStaticElement(this.template);
   }
 
   get template() {
@@ -37,8 +38,18 @@ export default class NotificationMessage {
   };
 
   show = (wrapper = document.body) => {
-    this.element = this.createStaticElement(this.template);
+
     wrapper.append(this.element);
+
+    if (this.type === 'success') {
+      this.element.classList.remove('error');
+      this.element.classList.add('success');
+    }
+
+    if (this.type === 'error') {
+      this.element.classList.remove('success');
+      this.element.classList.add('error');
+    }
 
     setTimeout(() => {
       this.destroy();
