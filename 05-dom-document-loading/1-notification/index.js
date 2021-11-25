@@ -1,4 +1,6 @@
 export default class NotificationMessage {
+  static element;
+
   constructor(message = '', {
     duration = 1000,
     type = 'success'
@@ -6,17 +8,9 @@ export default class NotificationMessage {
     this.message = message;
     this.duration = duration;
     this.type = type;
-    this.instance = document.querySelector('div.notification');
+    this.element = NotificationMessage.element;
 
-    this.initialize;
-  }
-
-  get initialize() {
-    if (this.instance) {
-      this.instance.remove();
-    }
-
-    this.element = createHtmlElement(this.template);
+    if (this.element) this.destroy();
   }
 
   get template() {
@@ -33,13 +27,18 @@ export default class NotificationMessage {
     `;
   }
 
-  show = (wrapper) => {
-    if (wrapper) {
-      wrapper.innerHTML = this.element.outerHTML;
-      document.body.append(wrapper);
-    } else {
-      document.body.append(this.element);
-    }
+  // Helper
+  createStaticElement = (html) => {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    NotificationMessage.element = div.firstElementChild;
+
+    return NotificationMessage.element;
+  };
+
+  show = (wrapper = document.body) => {
+    this.element = this.createStaticElement(this.template);
+    wrapper.append(this.element);
 
     setTimeout(() => {
       this.destroy();
@@ -58,10 +57,3 @@ export default class NotificationMessage {
   }
 }
 
-// Simple Helper for proper creation of div blocks
-const createHtmlElement = (html) => {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-
-  return div.firstElementChild;
-};
