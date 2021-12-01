@@ -1,17 +1,33 @@
 export default class SortableTable {
   element;
   subElements = {};
+  sortOrder = '';  // 'asc' or 'desc'
+  sortField = '';
 
-  constructor(headerConfig = [], data = []) {
+  constructor(headerConfig, {
+    data = [],
+    sorted = {
+      id: headerConfig.find(item => item.sortable).id,
+      order: 'asc'
+    }
+  }) {
     this.headerConfig = headerConfig;
     this.data = Array.isArray(data) ? data : data.data;
+    this.sortField = sorted.id;
+    this.sortOrder = sorted.order;
 
     this.render();
+    this.initListeners();
+    this.sort(this.sortField, this.sortOrder);
   }
 
   render() {
     this.element = createHtmlElement(this.template);
     this.subElements = this._getSubElements(this.element);
+  }
+
+  initListeners() {
+    document.addEventListener('pointerdown', this._onMouseClick);
   }
 
   get template() {
@@ -53,6 +69,23 @@ export default class SortableTable {
   }
 
   // Private method
+  _onMouseClick = event => {
+    const headerCell = event.target.closest('.sortable-table__cell');
+
+    if (headerCell) {
+      if (!headerCell.closest('.sortable-table__header')) {
+        return;
+      }
+      if (headerCell.dataset.sortable !== 'false') {
+        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+        this.sortField = headerCell.dataset.id;
+
+        this.sort(this.sortField, this.sortOrder);
+      }
+    }
+  }
+
+  // Private method
   _getTableRows(data) {
     return data.map(item => {
       return `
@@ -77,12 +110,10 @@ export default class SortableTable {
   // Private method
   _getSubElements(element) {
     const result = {};
-    const elements = element.querySelectorAll('[data-element]');
+    const subElements = element.querySelectorAll('[data-element]');
 
-    for (const subElement of elements) {
-      const name = subElement.dataset.element;
-
-      result[name] = subElement;
+    for (const subElement of subElements) {
+      result[subElement.dataset.element] = subElement;
     }
 
     return result;
@@ -125,6 +156,7 @@ export default class SortableTable {
   }
 
   destroy() {
+    document.removeEventListener('pointerdown', this._onMouseClick);
     this.remove();
     this.element = null;
     this.subElements = {};
